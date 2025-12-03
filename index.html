@@ -1,0 +1,128 @@
+<!-- Save this as help.html and open in your browser -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Help for Service</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; line-height: 1.4; }
+    form, .card { max-width: 700px; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+    label { display: block; margin-top: 0.75rem; font-weight: 600; }
+    input, textarea, button { width: 100%; padding: 0.6rem; margin-top: 0.3rem; font-size: 1rem; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+    .hidden { display: none; }
+    .success { background: #f0fff4; border: 1px solid #b7ebc6; padding: 0.75rem; border-radius: 6px; color: #115b2e; }
+  </style>
+</head>
+<body>
+  <h1>Help for Service</h1>
+  <p>Fill the form, download your request as a text file, then send an email to the organiser.</p>
+
+  <form id="helpForm" onsubmit="return false;">
+    <div class="row">
+      <div>
+        <label for="fullName">Full name</label>
+        <input id="fullName" name="fullName" type="text" placeholder="Your name" required />
+      </div>
+      <div>
+        <label for="email">Your email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required />
+      </div>
+    </div>
+
+    <label for="service">Service</label>
+    <input id="service" name="service" type="text" placeholder="e.g., park clean-up" required />
+
+    <label for="message">Message to organiser</label>
+    <textarea id="message" name="message" rows="5" placeholder="Write a short note…" required></textarea>
+
+    <div class="actions">
+      <button type="button" id="downloadBtn">Download request as .txt</button>
+      <a id="mailtoLink" href="#" style="text-decoration:none; padding:0.6rem; border:1px solid #ddd; border-radius:6px; display:inline-block;">
+        Send mail to organiser
+      </a>
+      <button type="button" id="doneBtn">I sent the email</button>
+    </div>
+  </form>
+
+  <div id="thankYou" class="hidden success">
+    <strong>Thank you for your help!</strong> Your request has been prepared and the organiser has been contacted.
+  </div>
+
+  <script>
+    const form = document.getElementById('helpForm');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const mailtoLink = document.getElementById('mailtoLink');
+    const doneBtn = document.getElementById('doneBtn');
+    const thankYou = document.getElementById('thankYou');
+
+    // organiser email set to your address
+    const organiserEmail = "nivaniyer@gmail.com";
+
+    function buildText() {
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const service = document.getElementById('service').value.trim();
+      const msg = document.getElementById('message').value.trim();
+
+      return [
+        "Help for Service — Request",
+        "---------------------------",
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Service: ${service}`,
+        "",
+        "Message:",
+        msg
+      ].join("\n");
+    }
+
+    function buildMailtoHref() {
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const service = document.getElementById('service').value.trim();
+      const msg = document.getElementById('message').value.trim();
+
+      const subject = encodeURIComponent(`Help for Service: ${service} — from ${name}`);
+      const body = encodeURIComponent(
+        `Hello,\n\nI'd like to help with: ${service}.\n\nMy details:\n- Name: ${name}\n- Email: ${email}\n\nMessage:\n${msg}\n\nThank you!`
+      );
+
+      return `mailto:${organiserEmail}?subject=${subject}&body=${body}`;
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      if (!form.reportValidity()) return;
+      const textContent = buildText();
+      const blob = new Blob([textContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "help-for-service-request.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    mailtoLink.addEventListener('click', (e) => {
+      if (!form.reportValidity()) {
+        e.preventDefault();
+        return;
+      }
+      mailtoLink.href = buildMailtoHref();
+      setTimeout(() => {
+        thankYou.classList.remove('hidden');
+      }, 300);
+    });
+
+    doneBtn.addEventListener('click', () => {
+      if (!form.reportValidity()) return;
+      thankYou.classList.remove('hidden');
+      thankYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  </script>
+</body>
+</html>
